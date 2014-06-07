@@ -16,7 +16,7 @@ N = 512;
 
 %% BBGC additif
 mu = 0;
-sigma = sqrt(varB(10));
+sigma = 0;
 
 %% Emetteur
 
@@ -85,7 +85,7 @@ title('DSP de Sl(t)');
 % Eg = 1 donc sigma(b).^2 = sigma(ss).^2 / SNR
 % sigma(ss).^2 = 1
 % donc sigma(b).^2 = 1/SNR
-% Valeurs de SNR : 0:10db -> 10^(
+
 varB = zeros(1, 10);
 for n=1:10
     SNR_l = 10.^(n/10);
@@ -93,14 +93,11 @@ for n=1:10
 end
 
 % Résultats :
-r = [0.1458 0.1356 0.1054 0.0758 0.0546 0.0424 0.0232 0.0178 0.0078 0.0036 ]
+r = [0.1458 0.1356 0.1054 0.0758 0.0546 0.0424 0.0232 0.0178 0.0078 0.0036 ];
 
 plot((1:10), r);
 title('TEB en fonction du SNR en db');
 xlabel('SNR en db'); ylabel('TEB');
-
-
-
 
 %%
 error = 0;
