@@ -5,9 +5,28 @@ clear all; close all;
 
 fe = 10000; % frequence d'echantillonnage : fe = 10 kHz
 Ts = 0.001; % Ds = 1kSymboles/s => Ts = 1 ms
+
+% g(t)
 g = ones(1, Ts*fe);
-g = g/(1/sqrt(0.1)); % On normalise le fitre de tel façon que Eg = 1
+g = (1/sqrt(Fse))* g; % On normalise le fitre de tel façon que Eg = 1
+
+% gt(t)
+gt = ones(1, Ts*fe);
+for i=1:Ts*fe
+    gt(i) = 1/(sqrt(3.85)) * (1 - (i-1)/(Ts*fe));  % On normalise le fitre de tel façon que Eg = 1
+end
+
+% ga(t)
 ga = g;
+
+gat = ones(1, Ts*fe);
+for i=1:Ts*fe
+    gat(i) = gt(end - i+1);
+end
+
+g = gt;
+ga = gat;
+
 nb_paquet = 1;
 Ns = 5000;
 sb = (rand(1,Ns * nb_paquet) > 0.5) * 1;
@@ -79,6 +98,8 @@ pwelch(sl(1:1000));
 title('DSP de Sl(t)');
 
 %% 5. Evolution du TEB en fonction du rapport Eb/N0 en dB
+% 6. Ajout d'une erreur de synchronisation temporelle
+
 % Relevé des données :
 % SNR = Eb/No = Eg.^2 * sigma(ss).^2 / sigma(b).^2
 % SNR varie de 0 à 10db
@@ -87,23 +108,43 @@ title('DSP de Sl(t)');
 % donc sigma(b).^2 = 1/SNR
 
 varB = zeros(1, 10);
+r5 = zeros(1, 10);
+r6 = zeros(1, 10);
 for n=1:10
     SNR_l = 10.^(n/10);
-    varB(n) = 1/(SNR_l);
+    varB = 1/(2*SNR_l);
+    sigma = sqrt(varB);
+    yl = sl + (mu + sigma * randn(1,length(sl)));
+    rl_t = conv(yl, ga);
+    
+    % Question 5
+    rl_n = downsample(rl_t, Fse);
+    An = rl_n;
+    An(An >= 0) = 1;
+    An(An < 0) = -1;
+    b = An;
+    b(b == -1) = 0;
+    b(b == 1) = 1;
+    b = b(2:end-1);
+    r5(n) = TEB(sb, b);
+    
+     % Question 6
+    rl_n = downsample(rl_t(1+0.1*Fse:end), Fse);
+    An = rl_n;
+    An(An >= 0) = 1;
+    An(An < 0) = -1;
+    b = An;
+    b(b == -1) = 0;
+    b(b == 1) = 1;
+    b = b(2:end-1);
+    r6(n) = TEB(sb, b);
 end
-
-% Résultats :
-r = [0.1458 0.1356 0.1054 0.0758 0.0546 0.0424 0.0232 0.0178 0.0078 0.0036 ];
-
-plot((1:10), r);
+%% Affichage
+figure(5);
+plot(r5);
 title('TEB en fonction du SNR en db');
 xlabel('SNR en db'); ylabel('TEB');
-
-%%
-error = 0;
-for i=1:4999
-    if(sb(i) ~= b(i))
-        error = error +1;
-    end
-end
-error
+hold on
+plot(r6, 'r');
+%plot(0.001*ones(1,15), 'g');
+legend('Sans erreur de synchronisation','Avec erreur de synchronisation');
