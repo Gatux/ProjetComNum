@@ -79,14 +79,14 @@ phase_tx = pskmod(symb_tx, M, pi/4);
 s_s = upsample(phase_tx, Fse);
 
 % Filtre de mise en forme
-g = rcosfir(alpha, 4, Fse, Ts, 'sqrt');
+g = rcosfir(alpha, 4, Ts*Fe, Ts, 'sqrt');
 s_l = conv(s_s, g);
 
 % Canal
 y_l = s_l + (mu + sigma * randn(1, length(s_l)));
 
 % Filtre de réception
-r_l = conv(s_l, g);
+r_l = conv(y_l, g);
 
 % Echantillonnage au rythme Ts
 r_ln = downsample(r_l, Fse);
@@ -99,7 +99,97 @@ symb_rx = symb_rx(9:end-8);
 pkt_rx = de2bi(symb_rx)';
 pkt_rx = pkt_rx(:)';
 
-disp('Taux d''Erreur Binaire : ');
+disp('Taux d''Erreur Binaire en BDB : ');
 disp(sum((pkt_rx == pkt_tx)==0));
 
 
+%% 4. Diagramme de l'oeil de s_l(t)
+
+eyediagram(s_l(1:Ns/5), Ts*Fe);
+
+
+%% 5. Diagramme de l'oeil de r_l(t)
+
+eyediagram(r_l(1:Ns/5), Ts*Fe);
+
+
+%% 6. Tracés des constallations de s_l(t) et de r_l[n]
+
+figure(4)
+
+subplot 121
+plot(s_l, 'r.', 'markersize', 15); 
+title('Tracé de la constellation de s_l(t)');
+axis([-0.5, 0.5, -0.5, 0.5]) 
+
+hold on
+
+subplot 122
+plot(r_l, 'r.', 'markersize', 15); 
+title('Tracé de la constellation de r_l[n]');
+axis([-1.5, 1.5, -1.5, 1.5]) 
+
+
+%% 7. Allure de la partie réelle de r_l(t)
+
+figure(5);
+n = 50 * Ts * Fe;
+%plot((0:n-1)/Fe, real(r_l(1:n)), '-+');
+title('Allure temporelle du signal sl(t)');
+
+
+%% 8. Emission sur un canal à bande passante infinie
+
+close all;
+
+% Génération de la porteuse complexe
+nbTs = Ns * Ts;
+t = 0:nbTs/(length(s_l)-1):nbTs;
+carrier = exp(1i*2*pi*F0*t);
+s = real(s_l.*carrier);
+
+% Canal à bande passante infinie
+y = filter([1], [1], s) + (mu + sigma * randn(1, length(s_l)));
+figure(6);
+plot(y)
+
+
+%% 9. Comparaison entre la DSP théorique et la DSP expérimentale
+
+
+%% 10. Méthode de reconstruction de l'enveloppe complexe au récepteur par projections orthogonales
+
+% Etage RF->BDB
+nbTs = Ns * Ts;
+t = 0:nbTs/(length(s_l)-1):nbTs;
+cosine = 2*cos(2*pi*F0*t);
+sine = -2*sin(2*pi*F0*t);
+
+y_i = y.*cosine;
+y_q = y.*sine;
+
+y_l = y_i + 1i*y_q;
+
+% Filtre de réception
+r_l = conv(y_l, g);
+
+% Echantillonnage au rythme Ts
+r_ln = downsample(r_l, Fse);
+
+% Démodulateur
+symb_rx = pskdemod(r_ln, M, pi/4);
+symb_rx = symb_rx(9:end-8);
+
+% Décision
+pkt_rx = de2bi(symb_rx)';
+pkt_rx = pkt_rx(:)';
+
+disp('Taux d''Erreur Binaire avec la méthode par projections orthogonales : ');
+disp(sum((pkt_rx == pkt_tx)==0)/length(pkt_tx));
+
+
+%% 11. Tracé et interprétation de la DSP de y_l(t) arpès le mélangeur sur la voie en phase
+
+figure(6)
+plot(pwelch(y_i)); 
+title('Voie en phase');
