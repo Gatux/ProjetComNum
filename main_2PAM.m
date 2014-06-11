@@ -8,7 +8,7 @@ Ts = 0.001; % Ds = 1kSymboles/s => Ts = 1 ms
 
 % g(t)
 g = ones(1, Ts*fe);
-g = (1/sqrt(Fse))* g; % On normalise le fitre de tel façon que Eg = 1
+g = (1/sqrt(Ts*fe))* g; % On normalise le fitre de tel façon que Eg = 1
 
 % gt(t)
 gt = ones(1, Ts*fe);
@@ -80,7 +80,7 @@ legend('sl(t)');
 % 2. Diagramme de l'oeil de sl(t)
 eyediagram(sl(1:1000), 3*Ts*fe);
 
-%% 3. Allure de rl(t) pour t=[0, 50*Ts - Te] en sortie du filtre adapté (non normalisé)
+% 3. Allure de rl(t) pour t=[0, 50*Ts - Te] en sortie du filtre adapté (non normalisé)
 figure(3);
 N = 50 * (Ts-(1/fe)) * fe;
 plot((0:N-1)/fe, rl_t(1:N), '-+');
@@ -88,7 +88,7 @@ title('Allure temporelle du signal rl(t)');
 xlabel('Temps (s)'); ylabel('Symboles');
 legend('rl(t)');
 
-%% 4. DSP de Ss(t) et Sl(t)
+% 4. DSP de Ss(t) et Sl(t)
 figure(4);
 subplot 211;
 pwelch(ss(1:1000));
@@ -107,12 +107,13 @@ title('DSP de Sl(t)');
 % sigma(ss).^2 = 1
 % donc sigma(b).^2 = 1/SNR
 
-varB = zeros(1, 10);
-r5 = zeros(1, 10);
-r6 = zeros(1, 10);
-for n=1:10
-    SNR_l = 10.^(n/10);
-    varB = 1/(2*SNR_l);
+varB = zeros(1, 15);
+r5 = zeros(1, 15);
+r6 = zeros(1, 15);
+SNR_l = ones(1, 15);
+for n=1:15
+    SNR_l(n) = 10.^(n/10);
+    varB = 1/(2*SNR_l(n));
     sigma = sqrt(varB);
     yl = sl + (mu + sigma * randn(1,length(sl)));
     rl_t = conv(yl, ga);
@@ -146,5 +147,6 @@ title('TEB en fonction du SNR en db');
 xlabel('SNR en db'); ylabel('TEB');
 hold on
 plot(r6, 'r');
-%plot(0.001*ones(1,15), 'g');
+plot(0.001*ones(1,15), 'g');
 legend('Sans erreur de synchronisation','Avec erreur de synchronisation');
+plot(
