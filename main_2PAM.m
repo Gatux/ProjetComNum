@@ -147,6 +147,6 @@ title('TEB en fonction du SNR en db');
 xlabel('SNR en db'); ylabel('TEB');
 hold on
 plot(r6, 'r');
-plot(0.001*ones(1,15), 'g');
-legend('Sans erreur de synchronisation','Avec erreur de synchronisation');
-plot(
+%plot(0.001*ones(1,15), 'g');
+plot(1/2 * erfc(sqrt(SNR_l)),'k');
+legend('Sans erreur de synchronisation','Avec erreur de synchronisation', 'TEB théorique');
