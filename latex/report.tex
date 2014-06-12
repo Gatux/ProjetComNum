@@ -9,7 +9,6 @@
 \usepackage{amssymb}
 \usepackage{amsmath}
 \usepackage{dsfont}
-\usepackage{float}
 \usepackage{caption}
 \usepackage{subcaption}
 \usepackage{array}
@@ -80,6 +79,7 @@
 				\label{Q314}
 			\end{figure}
 			
+\newpage
 		
 		\subsubsection{Évolution du TEB en fonction du rapport $\frac{E_b}{N_0}$}
 			\begin{figure}[!ht]
@@ -91,10 +91,17 @@
 			On observe que le signal comportant une erreur de synchronisation en sortie du filtre adapté est naturellement placé au dessus de la courbe n'en possédant pas.\\
 			De plus, à mesure que le SNR augmente, il est possible de quantifier cette erreur, car les erreurs binaires du signal sans erreur de synchronisation tendent vers 0.
 			
-			
-		\subsubsection{Calcul de la perte de sensibilité du récepteur si le TEB $< 10^{-3}$}
 	
-	\subsection{Premier filtre de mise en forme}
+	\subsubsection{Calcul de la perte de sensibilité du récepteur si le TEB $< 10^{-3}$}
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[scale=0.5]{images/Q317.png}
+				\caption{Evolution du TEB en fonction du SNR en db}
+				\label{Q315-6-2}
+			\end{figure}
+			On observe qu'il y a une perte de 4,5 db entre la courbe sans erreur de synchronisation et celle avec.
+			
+	\subsection{Second filtre de mise en forme}
 		Dans cette partie, nous utiliserons le filtre de mise en forme suivant :
 		\begin{equation}
 			g_t(t) = 
@@ -106,13 +113,75 @@
 		    \right.
 		\end{equation}
 		
+\newpage
 		\subsubsection{Allure temporelle du signal $s_l(t)$}
+			\begin{figure}[h]
+				\centering
+				\includegraphics[scale=0.5]{images/Q318-1.png}
+				\caption{Signal $s_l(t)$ pour $t \in [0, 50T_s-T_e]$}
+				\label{Q318-1}
+			\end{figure}
+			On remarque encore une fois que le signal possède une forme caractéristique liée au filtre de mis en forme.
+			
 		\subsubsection{Diagramme de l'oeil de $s_l(t)$}
+			\begin{figure}[h]
+				\centering
+				\includegraphics[scale=0.5]{images/Q318-2.png}
+				\caption{Diagramme de l'oeil de $s_l(t)$ pour $3T_s$}
+				\label{Q318-2}
+			\end{figure}
+			L'ouverture de l'oeil est maximale car la communication se fait sans bruit et sans déphasage. La forme de l'oeil est directement liée avec la forme du filtre de mise en forme.
+		
 		\subsubsection{Allure temporelle du signal $r_l(t)$}
+			\begin{figure}[h]
+				\centering
+				\includegraphics[scale=0.5]{images/Q318-3.png}
+				\caption{Signal $r_l(t)$ pour $t \in [0, 50T_s-T_e]$}
+				\label{Q318-3}
+			\end{figure}
+			Le signal reçu est non bruité, ce qui simplifiera la décision par la suite.
+		
+\newpage
 		\subsubsection{DSP de $s_l(t)$ et $s_s(t)$}
+			\begin{figure}[h]
+				\centering
+				\includegraphics[scale=0.5]{images/Q318-4.png}
+				\caption{Signal $r_l(t)$ pour $t \in [0, 50T_s-T_e]$}
+				\label{Q318-4}
+			\end{figure}
+		
 		\subsubsection{Évolution du TEB en fonction du rapport $\frac{E_b}{N_0}$}
-		\subsubsection{Même manipulation avec une erreur de synchronisation temporelle}
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[scale=0.5]{images/Q318-5-6.png}
+				\caption{Signal $r_l(t)$ pour $t \in [0, 50T_s-T_e]$}
+				\label{Q318-5-6}
+			\end{figure}
+			La courbe ayant le TEB le plus élevé est naturellement celle avec une erreur de synchronisation. Les deux courbes experimentales restent tout de même au dessus de la courbe théorique, mais tendent toutes vers 0 quand le SNR augmente.		
+		
 		\subsubsection{Calcul de la perte de sensibilité du récepteur si le TEB $< 10^{-3}$}
+			\begin{figure}[!ht]
+				\centering
+				\includegraphics[scale=0.5]{images/Q318-7.png}
+				\caption{Evolution du TEB en fonction du SNR en db}
+				\label{Q318-5-6-2}
+			\end{figure}
+			On observe cette fois ci une perte de 1,3 db entre la courbe sans erreur de synchronisation et celle avec.
+	
+	\subsection{Bilan comparatif de l'utilisation des deux filtres de mise en forme}
+	\begin{center}
+		\begin{tabular}{|c|c|c|}
+			\hline
+			& $g(t)$ & $g_t(t)$ \\
+			\hline
+			DSP  & Fréquence de coupure plus faible & Courbe plus haute en décibels \\
+			\hline
+			efficacité spectrale & Occupation de la même largeur de bande & Occupation de la même largeur de bande\\
+			\hline
+			$P_b$ & Equivalent. & Equivalent, mais $g_t(t)$ est plus sensible que $g(t).$\\
+			\hline
+		\end{tabular}
+	\end{center}
 		
 
 \section{Communication numériques sur fréquence porteuse}
@@ -184,10 +253,27 @@
 			Dans le cas du signal $s_l$, ces points proviennent du filtre de mise en forme et pour $r_l[n]$ cela provient de l'échantillonnage. 
 			
 		\subsubsection{Partie réelle de $r_l(t)$}
+			\begin{figure}[!h]
+				\centering
+				\includegraphics[scale=0.5]{images/Q427.png}
+				\caption{DSP de $y_l(t)$}
+				\label{Q427}
+			\end{figure}
+			Le retard est de $r = 8.1$ ms.
 		
+\newpage
 		
 		\subsubsection{Comparaison entre la DSP théorique de $s(t)$ avec la DSP expérimentale}
-		
+			\begin{figure}[!h]
+				\centering
+				\includegraphics[scale=0.5]{images/Q429.png}
+				\caption{DSP de $y_l(t)$}
+				\label{Q429}
+			\end{figure}
+			On remarque que la DSP théorique est l'enveloppe de la DSP expérimentale.
+			
+			
+			
 		\subsubsection{DSP de $y_l(t)$}
 			\begin{figure}[!h]
 				\centering

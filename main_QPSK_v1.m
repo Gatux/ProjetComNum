@@ -1,24 +1,6 @@
 %% Gabriel VERMEULEN - Maxime PETERLIN
 clear all; close all;
 
-%% Etude théorique
-
-% 1. Fonctionnement d'un modulateur et d'un démodulateur QPSK
-%       Pour tout k>=1, le modulateur va déphaser la porteuse en fonction
-%       du k-ième symbole à encoder, en prendre les Ts premières secondes,
-%       puis va reporter ce signal dans le signal à envoyer entre les
-%       instant (k-1)Ts et kTs
-%       
-%       Le démodulateur va faire l'étape inverse en analysant les phases
-%       des signaux récupérés entre les instants (k-1)Ts et Ts du signal
-%       réceptionné pour tout k>=1.
-%       Il fait ensuite la correspondance entre ces phases et les symboles.
-
-% 2. Fonction de transfert
-%       A enlever, mais voir : http://www.scicos.org/ScicosModNum/modnum_web/src/modnum_422/interf/scicos/help/fr/htm/SRRCF_c.htm
-
-% 3. 
-
 %% Initialisation des variables
 
 Ts = 0.001;     % Temps symbole
@@ -36,23 +18,9 @@ M = 4;          % Nombre de symboles dans la constellation
 mu = 0;         % Espérance
 sigma = 0;      % Variance
 
-%% 1. Tracé de la réponse impulsionnelle et du module de la fonction de transfert du filtre en racine de cosinus sur-élevé
-
 % Fonction de transfert
 g = rcosfir(alpha, 4, Fse, Ts, 'sqrt');
 g = g/(sum(g));
-
-figure(1)
-
-subplot 211
-impz(g);        % Réponse du filtre à un dirac
-title('Réponse impulsionnelle de g(t)');
-
-hold on;
-
-subplot 212
-plot(abs(g))    % Module de la fonction de transfert
-title('Module de la fonction de transfert de g(t)');
 
 
 %% 2. Implémentation d'un modulateur et d'un démodulateur
@@ -69,6 +37,8 @@ symb_rx = pskdemod(s_s, M, pi/4);
 
 %% 3. Vérification du fonctionnement de la chaîne de communication en BDB
 
+%% Emetteur
+
 % Association bits->symbole
 pkt_tx = randi([0 1], Ns * nbPkt, M/2);             % Création d'un paquet contenant les bits à encoder en symboles
 symb_tx = bi2de(pkt_tx)';                           % Conversion bits->symbole
@@ -84,8 +54,10 @@ g = rcosfir(alpha, 4, Ts*Fe, Ts, 'sqrt');
 g = g/(sum(g));
 s_l = conv(s_s, g);
 
-% Canal
+%% Canal
 y_l = s_l + (mu + sigma * randn(1, length(s_l)));
+
+%% Récepteur
 
 % Filtre de réception
 r_l = conv(y_l, g);
@@ -105,44 +77,7 @@ disp('Taux d''Erreur Binaire en BDB : ');
 disp(sum((pkt_rx == pkt_tx)==0));
 
 
-%% 4. Diagramme de l'oeil de s_l(t)
-
-eyediagram(s_l(41:Ns/5), Ts*Fe);
-
-
-%% 5. Diagramme de l'oeil de r_l(t)
-
-eyediagram(r_l(81:Ns/5), Ts*Fe);
-
-
-%% 6. Tracés des constellations de s_l(t) et de r_l[n]
-
-figure(4)
-
-subplot 121
-plot(s_l, 'r.', 'markersize', 1); 
-title('Tracé de la constellation de s_l(t)');
-axis([-0.5, 0.5, -0.5, 0.5]) 
-
-hold on
-
-subplot 122
-plot(r_l, 'r.', 'markersize', 1); 
-title('Tracé de la constellation de r_l[n]');
-axis([-1.5, 1.5, -1.5, 1.5]) 
-
-
-%% 7. Allure de la partie réelle de r_l(t)
-
-figure(5);
-n = 50 * Ts * Fe;
-plot((0:n-1)/Fe, real(r_l(1:n)), '-+');
-title('Allure temporelle du signal r_l(t)');
-
-
 %% 8. Emission sur un canal à bande passante infinie
-
-close all;
 
 % Génération de la porteuse complexe
 nbTs = Ns * Ts;
@@ -156,16 +91,9 @@ figure(6);
 plot(y)
 
 
-%% 9. Comparaison entre la DSP théorique et la DSP expérimentale
-
-DSP_th_S=(1/(4*Ts))*(abs(fft(g, N)).^2+abs(fft(g, N)).^2);
-DSP_S=abs(fft(s_l, N)).^2;
-plot(DSP_S, 'r');
-hold on
-plot(DSP_th_S); 
-
-
 %% 10. Méthode de reconstruction de l'enveloppe complexe au récepteur par projections orthogonales
+
+%% Recepteur
 
 % Etage RF->BDB
 nbTs = Ns * Ts;
@@ -195,9 +123,63 @@ pkt_rx = pkt_rx(:)';
 disp('Taux d''Erreur Binaire avec la méthode par projections orthogonales : ');
 disp(sum((pkt_rx == pkt_tx)==0)/length(pkt_tx));
 
+%% Figures de résultats
 
-%% 11. Tracé et interprétation de la DSP de y_l(t) arpès le mélangeur sur la voie en phase
+% 1. Tracé de la réponse impulsionnelle et du module de la fonction de transfert du filtre en racine de cosinus sur-élevé
+figure(1)
 
+subplot 211
+impz(g);        % Réponse du filtre à un dirac
+title('Réponse impulsionnelle de g(t)');
+
+hold on;
+
+subplot 212
+plot(abs(g))    % Module de la fonction de transfert
+title('Module de la fonction de transfert de g(t)');
+
+
+% 4. Diagramme de l'oeil de s_l(t)
+eyediagram(s_l(41:Ns/5), Ts*Fe);
+
+
+% 5. Diagramme de l'oeil de r_l(t)
+eyediagram(r_l(81:Ns/5), Ts*Fe);
+
+
+% 6. Tracés des constellations de s_l(t) et de r_l[n]
+figure(4)
+
+subplot 121
+plot(s_l, 'r.', 'markersize', 1); 
+title('Tracé de la constellation de s_l(t)');
+axis([-0.5, 0.5, -0.5, 0.5]) 
+
+hold on
+
+subplot 122
+plot(r_l, 'r.', 'markersize', 1); 
+title('Tracé de la constellation de r_l[n]');
+axis([-1.5, 1.5, -1.5, 1.5]) 
+
+
+% 7. Allure de la partie réelle de r_l(t)
+figure(5);
+r = 81;
+n = 50 * Ts * Fe;
+plot((0:n)/Fe, real(r_l(r:n+r)), '-+');
+title('Allure temporelle du signal r_l(t)');
+
+
+% 9. Comparaison entre la DSP théorique et la DSP expérimentale
+DSP_th_S=(1/(4*Ts))*(abs(fft(g, N)).^2+abs(fft(g, N)).^2);
+DSP_S=abs(fft(s_l, N)).^2;
+plot(DSP_S, 'r');
+hold on
+plot(DSP_th_S); 
+
+
+% 11. Tracé et interprétation de la DSP de y_l(t) arpès le mélangeur sur la voie en phase
 figure(6)
 plot(pwelch(y_i)); 
 title('Voie en phase');
