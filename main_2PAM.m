@@ -6,26 +6,28 @@ clear all; close all;
 fe = 10000; % frequence d'echantillonnage : fe = 10 kHz
 Ts = 0.001; % Ds = 1kSymboles/s => Ts = 1 ms
 
-% g(t)
+% Filtre g(t)
 g = ones(1, Ts*fe);
 g = (1/sqrt(Ts*fe))* g; % On normalise le fitre de tel façon que Eg = 1
 
-% gt(t)
+% Filtre gt(t)
 gt = ones(1, Ts*fe);
 for i=1:Ts*fe
     gt(i) = 1/(sqrt(3.85)) * (1 - (i-1)/(Ts*fe));  % On normalise le fitre de tel façon que Eg = 1
 end
 
-% ga(t)
+% Filtre ga(t)
 ga = g;
 
+% Filtre gat(t)
 gat = ones(1, Ts*fe);
 for i=1:Ts*fe
     gat(i) = gt(end - i+1);
 end
 
-g = gt;
-ga = gat;
+% A commenter si besoin pour utiliser soit g et ga, soit gt et gat
+%g = gt;
+%ga = gat;
 
 nb_paquet = 1;
 Ns = 5000;
@@ -38,16 +40,19 @@ mu = 0;
 sigma = 0;
 
 %% Emetteur
-
 % Association bits->Symbole
 ss = sb;
 ss(ss == 0) = -1;
 
+% Sur-échantillonnage
 ss = upsample(ss, Fse);
 
+% Filtrage de mise en forme
 sl = conv(ss, g);
+
 %% Canal
 yl = sl + (mu + sigma * randn(1,length(sl)));
+
 %% Récepteur
 % Filtre de réception ga(t)
 rl_t = conv(yl, ga);
@@ -88,7 +93,7 @@ title('Allure temporelle du signal rl(t)');
 xlabel('Temps (s)'); ylabel('Symboles');
 legend('rl(t)');
 
-% 4. DSP de Ss(t) et Sl(t)
+%% 4. DSP de Ss(t) et Sl(t)
 figure(4);
 subplot 211;
 pwelch(ss(1:1000));
@@ -96,6 +101,12 @@ title('DSP de Ss(t)');
 subplot 212;
 pwelch(sl(1:1000));
 title('DSP de Sl(t)');
+f=0:1:5000;
+DSP_Sl_th = db(0.25*0.25*Ts*(sinc(f*Ts)).^2);
+hold on;
+plot((0:length(DSP_Sl_th)-1)/length(DSP_Sl_th), DSP_Sl_th, 'r');
+legend('DSP expérimentale', 'DSP théorique');
+ylim([-160 40]);
 
 %% 5. Evolution du TEB en fonction du rapport Eb/N0 en dB
 % 6. Ajout d'une erreur de synchronisation temporelle
