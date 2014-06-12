@@ -40,6 +40,7 @@ sigma = 0;      % Variance
 
 % Fonction de transfert
 g = rcosfir(alpha, 4, Fse, Ts, 'sqrt');
+g = g/(sum(g));
 
 figure(1)
 
@@ -80,6 +81,7 @@ s_s = upsample(phase_tx, Fse);
 
 % Filtre de mise en forme
 g = rcosfir(alpha, 4, Ts*Fe, Ts, 'sqrt');
+g = g/(sum(g));
 s_l = conv(s_s, g);
 
 % Canal
@@ -105,27 +107,27 @@ disp(sum((pkt_rx == pkt_tx)==0));
 
 %% 4. Diagramme de l'oeil de s_l(t)
 
-eyediagram(s_l(1:Ns/5), Ts*Fe);
+eyediagram(s_l(41:Ns/5), Ts*Fe);
 
 
 %% 5. Diagramme de l'oeil de r_l(t)
 
-eyediagram(r_l(1:Ns/5), Ts*Fe);
+eyediagram(r_l(81:Ns/5), Ts*Fe);
 
 
-%% 6. Tracés des constallations de s_l(t) et de r_l[n]
+%% 6. Tracés des constellations de s_l(t) et de r_l[n]
 
 figure(4)
 
 subplot 121
-plot(s_l, 'r.', 'markersize', 15); 
+plot(s_l, 'r.', 'markersize', 1); 
 title('Tracé de la constellation de s_l(t)');
 axis([-0.5, 0.5, -0.5, 0.5]) 
 
 hold on
 
 subplot 122
-plot(r_l, 'r.', 'markersize', 15); 
+plot(r_l, 'r.', 'markersize', 1); 
 title('Tracé de la constellation de r_l[n]');
 axis([-1.5, 1.5, -1.5, 1.5]) 
 
@@ -134,8 +136,8 @@ axis([-1.5, 1.5, -1.5, 1.5])
 
 figure(5);
 n = 50 * Ts * Fe;
-%plot((0:n-1)/Fe, real(r_l(1:n)), '-+');
-title('Allure temporelle du signal sl(t)');
+plot((0:n-1)/Fe, real(r_l(1:n)), '-+');
+title('Allure temporelle du signal r_l(t)');
 
 
 %% 8. Emission sur un canal à bande passante infinie
@@ -155,6 +157,12 @@ plot(y)
 
 
 %% 9. Comparaison entre la DSP théorique et la DSP expérimentale
+
+DSP_th_S=(1/(4*Ts))*(abs(fft(g, N)).^2+abs(fft(g, N)).^2);
+DSP_S=abs(fft(s_l, N)).^2;
+plot(DSP_S, 'r');
+hold on
+plot(DSP_th_S); 
 
 
 %% 10. Méthode de reconstruction de l'enveloppe complexe au récepteur par projections orthogonales
