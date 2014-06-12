@@ -173,13 +173,21 @@ title('Allure temporelle du signal r_l(t)');
 
 % 9. Comparaison entre la DSP théorique et la DSP expérimentale
 DSP_th_S=(1/(4*Ts))*(abs(fft(g, N)).^2+abs(fft(g, N)).^2);
-DSP_S=abs(fft(s_l, N)).^2;
-plot(DSP_S, 'r');
+DSP_S=fftshift(abs(fft(s_l, N)).^2);
+plot((0:N-1)/N-0.5, DSP_S, 'r');
 hold on
-plot(DSP_th_S); 
+plot((0:N-1)/N-0.5, fftshift(DSP_th_S));
+title('Comparaison entre la DSP théorique et la DSP expérimentale');
+xlabel('Fréquence normalisée');
+ylabel('Amplitude');
+legend('DSP expérimentale', 'DSP théorique');
 
 
-% 11. Tracé et interprétation de la DSP de y_l(t) arpès le mélangeur sur la voie en phase
+%% 11. Tracé et interprétation de la DSP de y_l(t) arpès le mélangeur sur la voie en phase
 figure(6)
-plot(pwelch(y_i)); 
+DSP = fftshift(pwelch(y_i));
+N = length(DSP);
+plot((0:N-1)/N-0.5, DSP);
 title('Voie en phase');
+xlabel('Fréquence normalisée');
+ylabel('Amplitude');
